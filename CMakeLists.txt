@@ -3,4 +3,6 @@ project(thread_scheduler C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(thread_scheduler)
+add_executable(thread_scheduler
+        sut.h
+        sut.c)
