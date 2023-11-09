@@ -11,10 +11,11 @@
 extern pthread_t t_compute, t_io;
 extern pthread_mutex_t mutex_q_ready, mutex_q_wait;
 extern struct timespec t_sleep_time;
+extern int shutdown;
 
 extern struct queue q_ready, q_wait;
 
-extern ucontext_t *ucp_c_exec;
+extern ucontext_t *ucp_c_exec, *ucp_i_exec;
 extern struct sut_tcb *current_task;
 extern int task_count;
 
@@ -25,9 +26,9 @@ struct sut_tcb {
 	char *stack;
     sut_task_f function;
 	ucontext_t context;
-    // 0 = finished, 1 = terminated , 2 = yielded,
+    // 0 = expected to finish, 1 = terminated , 2 = yielded,
     // 3 = wait for open, 4 = wait for close, 5 = wait for read, 6 = wait for write
-    u_int8_t exit_status;
+    u_int8_t status;
 };
 
 void *c_exec();

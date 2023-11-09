@@ -21,6 +21,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ce105026-f0aa-49b3-a8fd-bd9685ab6a5a" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/sut_tests.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sut.c" beforeDir="false" afterPath="$PROJECT_DIR$/sut.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sut.h" beforeDir="false" afterPath="$PROJECT_DIR$/sut.h" afterDir="false" />
@@ -85,6 +86,7 @@
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
     "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings",
     "vue.rearranger.settings.migration": "true"
   }
@@ -94,7 +96,7 @@
       <recent name="C:\Users\itzta\Documents\Programming\CLionProjects\thread-scheduler" />
     </key>
   </component>
-  <component name="RunManager" selected="C/C++ File.tut_context.c">
+  <component name="RunManager" selected="C/C++ File.sut_tests.c">
     <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
         <option name="CLION.EXTERNAL.BUILD" enabled="true" />
@@ -105,6 +107,12 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration name="sut_tests.c" type="CppFileRunConfiguration" factoryName="CppFileRunConfiguration" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="thread_scheduler" TARGET_NAME="sut_tests.c" CONFIG_NAME="sut_tests.c">
+      <option name="sourceFile" value="sut_tests.c" />
+      <method v="2">
+        <option name="com.jetbrains.cidr.cpp.runfile.CppFileBuildBeforeRunTaskProvider$BasicBuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="tut_context.c" type="CppFileRunConfiguration" factoryName="CppFileRunConfiguration" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="thread_scheduler" TARGET_NAME="tut_context.c" CONFIG_NAME="tut_context.c">
       <option name="sourceFile" value="tut_context.c" />
       <method v="2">
@@ -112,11 +120,13 @@
       </method>
     </configuration>
     <list>
+      <item itemvalue="C/C++ File.sut_tests.c" />
       <item itemvalue="C/C++ File.tut_context.c" />
       <item itemvalue="CMake Application.thread_scheduler" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="C/C++ File.sut_tests.c" />
         <item itemvalue="C/C++ File.tut_context.c" />
       </list>
     </recent_temporary>
@@ -129,7 +139,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1699315341607</updated>
-      <workItem from="1699315347222" duration="37027000" />
+      <workItem from="1699315347222" duration="48054000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <option name="closed" value="true" />
@@ -155,7 +165,15 @@
       <option name="project" value="LOCAL" />
       <updated>1699493146288</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Cleaned up C-EXEC code from last implementation, started work on i_exec() for the I-EXEC (I/O) thread.">
+      <option name="closed" value="true" />
+      <created>1699498310882</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1699498310882</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -174,7 +192,8 @@
     <MESSAGE value="Initial commit" />
     <MESSAGE value="Added queue.h, sut.h, and sut.c.&#10;- prepared sut.c for implementation by documenting all functions from sut.h" />
     <MESSAGE value="Implemented compute executor thread.&#10;- sut.h: Added global variables and a task control block struct (sut_tcb).&#10;- sut.c: Added c_exec() function as main function of the C-EXEC (compute) thread.&#10;- sut.c: Implemented the FIFO ready queue - using queue.h - for compute tasks that should to be executed.&#10;- sut.c: Implemented creation and termination of tasks using ucontext.h." />
-    <option name="LAST_COMMIT_MESSAGE" value="Implemented compute executor thread.&#10;- sut.h: Added global variables and a task control block struct (sut_tcb).&#10;- sut.c: Added c_exec() function as main function of the C-EXEC (compute) thread.&#10;- sut.c: Implemented the FIFO ready queue - using queue.h - for compute tasks that should to be executed.&#10;- sut.c: Implemented creation and termination of tasks using ucontext.h." />
+    <MESSAGE value="Cleaned up C-EXEC code from last implementation, started work on i_exec() for the I-EXEC (I/O) thread." />
+    <option name="LAST_COMMIT_MESSAGE" value="Cleaned up C-EXEC code from last implementation, started work on i_exec() for the I-EXEC (I/O) thread." />
   </component>
   <component name="XDebuggerManager">
     <watches-manager>
