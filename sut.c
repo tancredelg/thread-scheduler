@@ -9,8 +9,11 @@
 
 
 pthread_t t_compute, t_io;
-pthread_mutex_t mutex_q_ready;
+pthread_mutex_t mutex_q_ready, mutex_q_wait;
+struct timespec t_sleep_time = {0, SLEEP_TIME_NS};
+
 struct queue q_ready, q_wait;
+
 ucontext_t *ucp_c_exec;
 struct sut_tcb *current_task;
 int task_count;
@@ -25,6 +28,10 @@ void sut_init() {
     // Init kernel threads (C-EXEC and I-EXEC)
     pthread_create(&t_compute, NULL, c_exec, NULL);
     pthread_create(&t_io, NULL, i_exec, NULL);
+    
+    // Init mutex locks
+    pthread_mutex_init(&mutex_q_ready, NULL);
+    pthread_mutex_init(&mutex_q_wait, NULL);
 
     // Init task queues
     q_ready = queue_create();
@@ -63,81 +70,119 @@ bool sut_create(sut_task_f fn) {
     task->context.uc_stack.ss_size = THREAD_STACK_SIZE;
     task->context.uc_stack.ss_flags = 0;
     task->function = fn;
-    task->exit_status = 0;
 
     struct queue_entry *node = queue_new_node(task);
+    pthread_mutex_lock(&mutex_q_ready);
+    // ENTER CRITICAL SECTION
     queue_insert_tail(&q_ready, node);
     ++task_count;
+    // EXIT CRITICAL SECTION
+    pthread_mutex_unlock(&mutex_q_ready);
 	return 1;
 }
 
+/// @brief The start routine for the C-EXEC (compute) thread.
 void *c_exec() {
-    struct timespec sleep_time = {0, SLEEP_TIME_NS};
-    struct queue_entry *next_task_entry;
-
+    struct queue_entry *q_ready_entry;
     while (1) {
-        next_task_entry = queue_pop_head(&q_ready);
+        pthread_mutex_lock(&mutex_q_ready);
+        // ENTER CRITICAL SECTION
 
-        if (next_task_entry == NULL) {
-            nanosleep(&sleep_time, NULL);
+        q_ready_entry = queue_pop_head(&q_ready);
+        if (q_ready_entry == NULL) {
+            // EXIT CRITICAL SECTION
+            pthread_mutex_unlock(&mutex_q_ready);
+            
+            nanosleep(&t_sleep_time, NULL);
             continue;
         }
 
-        // There is a task in q_ready, prepare it for execution
-        pthread_mutex_lock(&mutex_q_ready); // ENTER CRITICAL SECTION
-        
-        current_task = (struct sut_tcb *)next_task_entry->data;
+        // There was a task in q_ready, so run it        
+        current_task = (struct sut_tcb *)q_ready_entry->data;
         printf("[Task %d]\t", current_task->id);
-        current_task->exit_status = 0; // 0 = finished (default)
+        current_task->exit_status = 0; // 0 = finished (default expectation)
         current_task->context.uc_link = ucp_c_exec; // Link to c_exec()
         makecontext(&(current_task->context), current_task->function, 1, current_task);
-        
-        pthread_mutex_unlock(&mutex_q_ready); // EXIT CRITICAL SECTION
+        // EXIT CRITICAL SECTION
+        pthread_mutex_unlock(&mutex_q_ready);
 
         // Execute the task
         swapcontext(ucp_c_exec, &(current_task->context));
 
         // Back from task, check its exit_status to see how it returned.
-        pthread_mutex_lock(&mutex_q_ready); // ENTER CRITICAL SECTION
-
-        if (current_task->exit_status == 0) { // finished
-            printf("[Task %d]\tFinished.\n", current_task->id);
+        pthread_mutex_lock(&mutex_q_ready);
+        // ENTER CRITICAL SECTION
+        if (current_task->exit_status <= 1) { // finished OR terminated
+            if (current_task->exit_status == 0)
+                printf("[Task %d]\tFinished.\n", current_task->id);
+            else
+                printf("[Task %d]\tTerminated.\n", current_task->id);
+                
+            // Free allocated heap memory
             free(current_task->stack);
             free(current_task);
             current_task = NULL;
-        } else if (current_task->exit_status == 1) { // yielded
-            // Put the task back in q_ready
+        } else if (current_task->exit_status <= 6) { // yielded (2) OR waiting on I/O (3-6)
             struct queue_entry *node = queue_new_node(current_task);
-            queue_insert_tail(&q_ready, node);
             current_task = NULL;
-        } else if (current_task->exit_status == 2) { // terminated
-            printf("[Task %d]\tTerminated.\n", current_task->id);
-            free(current_task->stack);
-            free(current_task);
-            current_task = NULL;
-        }
 
-        pthread_mutex_unlock(&mutex_q_ready); // EXIT CRITICAL SECTION
+            if (current_task->exit_status >= 3) { // Task interrupted by I/O, into q_wait for I-EXEC
+                queue_insert_tail(&q_wait, node);
+            } else { // Task yielded, back into q_ready
+                queue_insert_tail(&q_ready, node);
+            }
+        }
+        // EXIT CRITICAL SECTION
+        pthread_mutex_unlock(&mutex_q_ready);
     }
 }
 
+/// @brief The start routine for the I-EXEC (I/O) thread.
 void *i_exec() {
+    struct queue_entry *q_wait_entry;
+    struct sut_tcb *waiting_task;
+    while (1) {
+        q_wait_entry = queue_pop_head(&q_wait);
 
+        if (q_wait_entry == NULL) {
+            nanosleep(&t_sleep_time, NULL);
+            continue;
+        }
+        
+        // There was a task in q_wait, so handle the I/O, then put it back in q_ready
+        waiting_task = (struct sut_tcb *)q_wait_entry->data;
+    }
 }
 
 /// @brief Allows a running task to yield execution before completing its function.
 void sut_yield() {
-    // Called by the task itself
-    if (current_task == NULL) return;
-    current_task->exit_status = 1; // 1 = yielded
+    pthread_mutex_lock(&mutex_q_ready);
+    // ENTER CRITICAL SECTION
+    if (current_task == NULL) {
+        // EXIT CRITICAL SECTION
+        pthread_mutex_unlock(&mutex_q_ready);
+        return;
+    }
+    current_task->exit_status = 2; // 2 = yielded
+    // EXIT CRITICAL SECTION
+    pthread_mutex_unlock(&mutex_q_ready);
+    
     swapcontext(&(current_task->context), ucp_c_exec);
 }
 
 /// @brief Terminates the execution of a task. If there are multiple tasks running, calling this function will only terminate the current task.
 void sut_exit() {
-    // Called by the task itself
-    if (current_task == NULL) return;
-    current_task->exit_status = 2; // 2 = terminated
+    pthread_mutex_lock(&mutex_q_ready);
+    // ENTER CRITICAL SECTION
+    if (current_task == NULL) {
+        // EXIT CRITICAL SECTION
+        pthread_mutex_unlock(&mutex_q_ready);
+        return;
+    }
+    current_task->exit_status = 1; // 1 = terminated
+    // EXIT CRITICAL SECTION
+    pthread_mutex_unlock(&mutex_q_ready);
+    
     setcontext(ucp_c_exec);
 }
 
@@ -145,7 +190,7 @@ void sut_exit() {
 /// @param file_name The name of the file to open.
 /// @return -1 if the file does not exist, 0 otherwise.
 int sut_open(char *file_name) {
-
+    
 }
 
 /// @brief Closes the file pointed to by the file descriptor `fd`.
