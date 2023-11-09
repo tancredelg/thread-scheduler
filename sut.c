@@ -16,7 +16,7 @@ int shutdown;
 struct queue q_ready, q_wait;
 
 ucontext_t *ucp_c_exec, *ucp_i_exec;
-struct sut_tcb *current_task;
+struct sut_tcb *current_task, *waiting_task;
 int task_count;
 
 
@@ -43,6 +43,7 @@ void sut_init() {
     queue_init(&q_wait);
     
     current_task = NULL;
+    waiting_task = NULL;
     task_count = 0;
 }
 
@@ -72,6 +73,7 @@ bool sut_create(sut_task_f fn) {
     task->context.uc_stack.ss_sp = task->stack;
     task->context.uc_stack.ss_size = THREAD_STACK_SIZE;
     task->context.uc_stack.ss_flags = 0;
+    task->context.uc_link = ucp_c_exec;
     task->function = fn;
     task->status = 0; // 0 = expected to finish
 
@@ -92,7 +94,6 @@ void *c_exec() {
         pthread_mutex_unlock(&mutex_q_ready); // UNLOCK READY QUEUE
         
         if (q_ready_entry == NULL) {
-            printf("NO TASKS READY\n");
             if (shutdown) break;
             nanosleep(&t_sleep_time, NULL);
             continue;
@@ -100,9 +101,8 @@ void *c_exec() {
 
         // There was a task in q_ready, so run it        
         current_task = (struct sut_tcb *)q_ready_entry->data;
-        printf("[Task %d]\t", current_task->id);
+        printf("C-EXEC: [Task %d]\t", current_task->id);
         if (current_task->status == 0) {
-            current_task->context.uc_link = ucp_c_exec; // Link to c_exec(), so it returns here
             makecontext(&(current_task->context), current_task->function, 1, current_task);
         } else {
             current_task->status = 0; // Reset task status to 'expected to finish'
@@ -119,10 +119,10 @@ void *c_exec() {
             free(current_task);
             current_task = NULL;
             --task_count;
-        } else if (current_task->status <= 6) { // yielded (2) OR waiting on I/O (3-6)
+        } else if (current_task->status <= 3) { // yielded (2) OR waiting on I/O (3)
             struct queue_entry *node = queue_new_node(current_task);
 
-            if (current_task->status < 3) { // Task yielded via sut_yield(), back into q_ready
+            if (current_task->status == 2) { // Task yielded via sut_yield(), back into q_ready
                 pthread_mutex_lock(&mutex_q_ready); // LOCK READY QUEUE
                 queue_insert_tail(&q_ready, node);
                 pthread_mutex_unlock(&mutex_q_ready); // UNLOCK READY QUEUE
@@ -140,7 +140,6 @@ void *c_exec() {
 /// @brief The start routine for the I-EXEC (I/O) thread.
 void *i_exec() {
     struct queue_entry *q_wait_entry;
-    struct sut_tcb *waiting_task;
     while (1) {
         pthread_mutex_lock(&mutex_q_wait); // LOCK WAIT QUEUE
         q_wait_entry = queue_pop_head(&q_wait);
@@ -154,29 +153,29 @@ void *i_exec() {
         
         // There was a task in q_wait, so handle the I/O, then put it back in q_ready
         waiting_task = (struct sut_tcb *)q_wait_entry->data;
-        waiting_task->context.uc_link = ucp_i_exec;
-        makecontext(&(waiting_task->context), waiting_task->function, 1, waiting_task);
-        
-        // Switch back to the context of the waiting task, but this time from the I-EXEC thread
+        printf("\nI-EXEC: Taking care of [Task %d]\n", waiting_task->id);        
+        // Switch back to the context of the waiting task to do execute I/O operation (on the I-EXEC thread)
         swapcontext(ucp_i_exec, &(waiting_task->context));
+        
         // Done with I/O operation, now put the task back in the ready queue
         pthread_mutex_lock(&mutex_q_ready); // LOCK READY QUEUE
         queue_insert_tail(&q_ready, q_wait_entry);
         pthread_mutex_unlock(&mutex_q_ready); // UNLOCK READY QUEUE
+        waiting_task = NULL;
     }
 }
 
 /// @brief Allows a running task to yield execution before completing its function.
 void sut_yield() {
     printf(" YIELDING\n");
-    current_task->status = 2; // 2 = yielded
+    current_task->status = 2;
     swapcontext(&(current_task->context), ucp_c_exec);
 }
 
 /// @brief Terminates the execution of a task. If there are multiple tasks running, calling this function will only terminate the current task.
 void sut_exit() {
     printf(" TERMINATING\n");
-    current_task->status = 1; // 1 = terminated
+    current_task->status = 1;
     setcontext(ucp_c_exec);
 }
 
@@ -185,11 +184,13 @@ void sut_exit() {
 /// @return -1 if the file does not exist, 0 otherwise.
 int sut_open(char *file_name) {
     current_task->status = 3; // 3 = wait for open
-    // Yield control of the C-EXEC thread, back to c_exec()
+    // Yield control of the C-EXEC thread (returning to c_exec())
     swapcontext(&(current_task->context), ucp_c_exec);
-    // Continue in the I-EXEC thread, coming from i_exec() 
-    printf("I-EXEC: open file: '%s'\n", file_name);
-    return -1;
+    // Continue in the I-EXEC thread (coming from i_exec())
+    int fd = 10;
+    // Go back to i_exec()
+    swapcontext(&(waiting_task->context), ucp_i_exec);
+    return fd;
 }
 
 /// @brief Closes the file pointed to by the file descriptor `fd`.

@@ -16,7 +16,7 @@ extern int shutdown;
 extern struct queue q_ready, q_wait;
 
 extern ucontext_t *ucp_c_exec, *ucp_i_exec;
-extern struct sut_tcb *current_task;
+extern struct sut_tcb *current_task, *waiting_task;
 extern int task_count;
 
 typedef void (*sut_task_f)();
@@ -26,9 +26,7 @@ struct sut_tcb {
 	char *stack;
     sut_task_f function;
 	ucontext_t context;
-    // 0 = expected to finish, 1 = terminated , 2 = yielded,
-    // 3 = wait for open, 4 = wait for close, 5 = wait for read, 6 = wait for write
-    u_int8_t status;
+    u_int8_t status; // 0 = expected to finish, 1 = terminated , 2 = yielded, 3 = wait on I/O
 };
 
 void *c_exec();

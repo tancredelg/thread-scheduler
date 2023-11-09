@@ -21,10 +21,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ce105026-f0aa-49b3-a8fd-bd9685ab6a5a" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/sut_tests.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sut.c" beforeDir="false" afterPath="$PROJECT_DIR$/sut.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sut.h" beforeDir="false" afterPath="$PROJECT_DIR$/sut.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sut_tests.c" beforeDir="false" afterPath="$PROJECT_DIR$/sut_tests.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -139,7 +139,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1699315341607</updated>
-      <workItem from="1699315347222" duration="48054000" />
+      <workItem from="1699315347222" duration="51226000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <option name="closed" value="true" />
@@ -173,7 +173,15 @@
       <option name="project" value="LOCAL" />
       <updated>1699498310882</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Fixed/tidied c_exec(), sut_yield(), sut_exit() - they now function properly; continued work on i_exec(), and sut_open(); added sut_tests.c for testing.">
+      <option name="closed" value="true" />
+      <created>1699569099455</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1699569099455</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -193,7 +201,8 @@
     <MESSAGE value="Added queue.h, sut.h, and sut.c.&#10;- prepared sut.c for implementation by documenting all functions from sut.h" />
     <MESSAGE value="Implemented compute executor thread.&#10;- sut.h: Added global variables and a task control block struct (sut_tcb).&#10;- sut.c: Added c_exec() function as main function of the C-EXEC (compute) thread.&#10;- sut.c: Implemented the FIFO ready queue - using queue.h - for compute tasks that should to be executed.&#10;- sut.c: Implemented creation and termination of tasks using ucontext.h." />
     <MESSAGE value="Cleaned up C-EXEC code from last implementation, started work on i_exec() for the I-EXEC (I/O) thread." />
-    <option name="LAST_COMMIT_MESSAGE" value="Cleaned up C-EXEC code from last implementation, started work on i_exec() for the I-EXEC (I/O) thread." />
+    <MESSAGE value="Fixed/tidied c_exec(), sut_yield(), sut_exit() - they now function properly; continued work on i_exec(), and sut_open(); added sut_tests.c for testing." />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed/tidied c_exec(), sut_yield(), sut_exit() - they now function properly; continued work on i_exec(), and sut_open(); added sut_tests.c for testing." />
   </component>
   <component name="XDebuggerManager">
     <watches-manager>

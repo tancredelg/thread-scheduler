@@ -7,7 +7,17 @@
 
 
 void func1() {
-    printf("func1: []\n");
+    struct timespec sleep_time = {0, 250000000};
+    printf("func1: [");
+    nanosleep(&sleep_time, NULL);
+    fflush(stdout);
+    int rng;
+    for (int i = 0; i < 3; ++i) {
+        printf("--");
+        fflush(stdout);
+        nanosleep(&sleep_time, NULL);
+    }
+    printf("]\n");
 }
 
 void func2() {
@@ -25,6 +35,12 @@ void func2() {
         nanosleep(&sleep_time, NULL);
     }
     printf("]\n");
+}
+
+void openfile() {
+    printf("openfile: going to open file.txt\n");
+    int fd = sut_open("file.txt");
+    printf("openfile: the fd = %d\n", fd);
 }
 
 void hello1() {
@@ -53,6 +69,13 @@ void hello2() {
     sut_exit();
 }
 
+void test4() {
+    sut_init();
+    sut_create(hello1);
+    sut_create(hello2);
+    sut_shutdown();
+}
+
 void test6() {
     sut_init();
 
@@ -64,15 +87,20 @@ void test6() {
     sut_shutdown();
 }
 
-void test4() {
+void test7() {
     sut_init();
-    sut_create(hello1);
-    sut_create(hello2);
+    sut_create(func1);
+    sut_create(openfile);
+    sut_create(func1);
+    sleep(3);
+    sut_create(func1);
+    sleep(2);
     sut_shutdown();
 }
 
 int main() {
     //test4();
-    test6();
+    //test6();
+    test7();
     return 0;
 }
