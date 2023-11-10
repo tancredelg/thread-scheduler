@@ -11,7 +11,12 @@
   </component>
   <component name="CMakeRunConfigurationManager">
     <generated>
-      <config projectName="thread_scheduler" targetName="thread_scheduler" />
+      <config projectName="thread_scheduler" targetName="test6" />
+      <config projectName="thread_scheduler" targetName="test5" />
+      <config projectName="thread_scheduler" targetName="test4" />
+      <config projectName="thread_scheduler" targetName="test3" />
+      <config projectName="thread_scheduler" targetName="test2" />
+      <config projectName="thread_scheduler" targetName="test1" />
     </generated>
   </component>
   <component name="CMakeSettings">
@@ -21,10 +26,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ce105026-f0aa-49b3-a8fd-bd9685ab6a5a" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/test1.c" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test2.c" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test3.c" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test4.c" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test5.c" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test6.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sut.c" beforeDir="false" afterPath="$PROJECT_DIR$/sut.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sut.h" beforeDir="false" afterPath="$PROJECT_DIR$/sut.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sut_tests.c" beforeDir="false" afterPath="$PROJECT_DIR$/sut_tests.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sut_tests.c" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,6 +66,9 @@
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectApplicationVersion">
     <option name="ide" value="CLion" />
@@ -87,28 +102,70 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings",
+    "settings.editor.selected.configurable": "editor.preferences.fonts.default",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\itzta\Documents\Programming\CLionProjects\thread-scheduler" />
+      <recent name="C:\Users\itzta\Documents\Programming\CLionProjects\thread-scheduler\tests" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\itzta\Documents\Programming\CLionProjects\thread-scheduler" />
+      <recent name="C:\Users\itzta\Documents\Programming\CLionProjects\thread-scheduler\tests" />
     </key>
   </component>
-  <component name="RunManager" selected="C/C++ File.sut_tests.c">
+  <component name="RunManager" selected="CMake Application.test6">
     <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
         <option name="CLION.EXTERNAL.BUILD" enabled="true" />
       </method>
     </configuration>
-    <configuration name="thread_scheduler" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="thread_scheduler" TARGET_NAME="thread_scheduler" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="thread_scheduler" RUN_TARGET_NAME="thread_scheduler">
+    <configuration name="test1" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="thread_scheduler" TARGET_NAME="test1" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="thread_scheduler" RUN_TARGET_NAME="test1">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test2" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="thread_scheduler" TARGET_NAME="test2" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="thread_scheduler" RUN_TARGET_NAME="test2">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test3" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="thread_scheduler" TARGET_NAME="test3" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="thread_scheduler" RUN_TARGET_NAME="test3">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test4" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="thread_scheduler" TARGET_NAME="test4" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="thread_scheduler" RUN_TARGET_NAME="test4">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test5" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="thread_scheduler" TARGET_NAME="test5" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="thread_scheduler" RUN_TARGET_NAME="test5">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test6" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="thread_scheduler" TARGET_NAME="test6" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="thread_scheduler" RUN_TARGET_NAME="test6">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="sut_tests.c" type="CppFileRunConfiguration" factoryName="CppFileRunConfiguration" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="thread_scheduler" TARGET_NAME="sut_tests.c" CONFIG_NAME="sut_tests.c">
       <option name="sourceFile" value="sut_tests.c" />
+      <method v="2">
+        <option name="com.jetbrains.cidr.cpp.runfile.CppFileBuildBeforeRunTaskProvider$BasicBuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test1.c (1)" type="CppFileRunConfiguration" factoryName="CppFileRunConfiguration" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="thread_scheduler" TARGET_NAME="test1.c">
+      <option name="sourceFile" value="test1.c" />
+      <method v="2">
+        <option name="com.jetbrains.cidr.cpp.runfile.CppFileBuildBeforeRunTaskProvider$BasicBuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test1.c" type="CppFileRunConfiguration" factoryName="CppFileRunConfiguration" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="thread_scheduler" TARGET_NAME="test1.c" CONFIG_NAME="test1.c">
+      <option name="sourceFile" value="tests\test1.c" />
       <method v="2">
         <option name="com.jetbrains.cidr.cpp.runfile.CppFileBuildBeforeRunTaskProvider$BasicBuildBeforeRunTask" enabled="true" />
       </method>
@@ -120,12 +177,21 @@
       </method>
     </configuration>
     <list>
+      <item itemvalue="C/C++ File.test1.c (1)" />
       <item itemvalue="C/C++ File.sut_tests.c" />
+      <item itemvalue="C/C++ File.test1.c" />
       <item itemvalue="C/C++ File.tut_context.c" />
-      <item itemvalue="CMake Application.thread_scheduler" />
+      <item itemvalue="CMake Application.test1" />
+      <item itemvalue="CMake Application.test2" />
+      <item itemvalue="CMake Application.test3" />
+      <item itemvalue="CMake Application.test4" />
+      <item itemvalue="CMake Application.test5" />
+      <item itemvalue="CMake Application.test6" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="C/C++ File.test1.c (1)" />
+        <item itemvalue="C/C++ File.test1.c" />
         <item itemvalue="C/C++ File.sut_tests.c" />
         <item itemvalue="C/C++ File.tut_context.c" />
       </list>
@@ -139,7 +205,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1699315341607</updated>
-      <workItem from="1699315347222" duration="51226000" />
+      <workItem from="1699315347222" duration="65179000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <option name="closed" value="true" />
@@ -181,7 +247,15 @@
       <option name="project" value="LOCAL" />
       <updated>1699569099455</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Progress on I-EXEC side, with working sut_open(), and working I/O thread switching.">
+      <option name="closed" value="true" />
+      <created>1699572124903</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1699572124903</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -202,7 +276,8 @@
     <MESSAGE value="Implemented compute executor thread.&#10;- sut.h: Added global variables and a task control block struct (sut_tcb).&#10;- sut.c: Added c_exec() function as main function of the C-EXEC (compute) thread.&#10;- sut.c: Implemented the FIFO ready queue - using queue.h - for compute tasks that should to be executed.&#10;- sut.c: Implemented creation and termination of tasks using ucontext.h." />
     <MESSAGE value="Cleaned up C-EXEC code from last implementation, started work on i_exec() for the I-EXEC (I/O) thread." />
     <MESSAGE value="Fixed/tidied c_exec(), sut_yield(), sut_exit() - they now function properly; continued work on i_exec(), and sut_open(); added sut_tests.c for testing." />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed/tidied c_exec(), sut_yield(), sut_exit() - they now function properly; continued work on i_exec(), and sut_open(); added sut_tests.c for testing." />
+    <MESSAGE value="Progress on I-EXEC side, with working sut_open(), and working I/O thread switching." />
+    <option name="LAST_COMMIT_MESSAGE" value="Progress on I-EXEC side, with working sut_open(), and working I/O thread switching." />
   </component>
   <component name="XDebuggerManager">
     <watches-manager>
