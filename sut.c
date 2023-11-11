@@ -157,6 +157,8 @@ void *c_exec() {
             queue_insert_tail(&q_wait, node);
             pthread_mutex_unlock(&mtx_q_wait); // UNLOCK WAIT QUEUE
         }
+        
+        free(q_ready_entry);
         current_task = NULL;
     }
 }
