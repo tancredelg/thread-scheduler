@@ -10,24 +10,25 @@
 
 #define THREAD_STACK_SIZE (1024 * 1024)
 
+// User threads
 struct sut_tcb {
     int id;
     char *stack;
     sut_task_f function;
     ucontext_t context;
-    u_int8_t status; // 0 = expected to finish, 1 = terminated , 2 = yielded, 3 = wait on I/O
+    u_int8_t status; ///< 0 = expected to finish,\n 1 = terminated,\n 2 = yielded,\n 3 = waiting on I/O
 } *current_task, *waiting_task;
 
-pthread_t *t_compute, *t_io;
-pthread_mutex_t mtx_q_ready, mtx_q_wait, mtx_shutdown;
-struct timespec t_sleep_time = {0, 100000};
-bool shutdown;
+ucontext_t *ucp_c_exec, *ucp_i_exec;
+int tasks_created;
 
 struct queue q_ready, q_wait;
 
-ucontext_t *ucp_c_exec, *ucp_i_exec;
-//struct sut_tcb *current_task, *waiting_task;
-int task_count;
+// Kernel threads
+pthread_t *t_compute, *t_io;
+pthread_mutex_t mtx_q_ready, mtx_q_wait, mtx_shutdown;
+struct timespec t_sleep_time = {0, 100000}; ///< Use with `nanosleep` to make a thread sleep for 0.1ms.
+bool shutdown;
 
 
 void *c_exec();
@@ -35,30 +36,30 @@ void *i_exec();
 
 /// @brief Initializes the SUT library. It should be called before making any other API calls.
 void sut_init() {
-    t_compute = (pthread_t*) malloc(sizeof(pthread_t));
-    t_io = (pthread_t*) malloc(sizeof(pthread_t));
+    // Init user threads/task
     ucp_c_exec = (ucontext_t *) malloc(sizeof(ucontext_t));
     ucp_i_exec = (ucontext_t *) malloc(sizeof(ucontext_t));
-    shutdown = false;
-
-    // Init kernel threads (C-EXEC and I-EXEC)
-    pthread_create(t_compute, NULL, c_exec, NULL);
-    pthread_create(t_io, NULL, i_exec, NULL);
-    
-    // Init mutex locks
-    pthread_mutex_init(&mtx_q_ready, NULL);
-    pthread_mutex_init(&mtx_q_wait, NULL);
-    pthread_mutex_init(&mtx_shutdown, NULL);
+    current_task = NULL;
+    waiting_task = NULL;
+    tasks_created = 0;
 
     // Init task queues
     q_ready = queue_create();
     q_wait = queue_create();
     queue_init(&q_ready);
     queue_init(&q_wait);
+
+    // Init mutex locks
+    pthread_mutex_init(&mtx_q_ready, NULL);
+    pthread_mutex_init(&mtx_q_wait, NULL);
+    pthread_mutex_init(&mtx_shutdown, NULL);
     
-    current_task = NULL;
-    waiting_task = NULL;
-    task_count = 0;
+    // Init kernel threads (C-EXEC and I-EXEC)
+    shutdown = false;
+    t_compute = (pthread_t*) malloc(sizeof(pthread_t));
+    t_io = (pthread_t*) malloc(sizeof(pthread_t));
+    pthread_create(t_compute, NULL, c_exec, NULL);
+    pthread_create(t_io, NULL, i_exec, NULL);
 }
 
 /// @brief Creates a task with the given function `fn` as its main body. 
@@ -68,33 +69,33 @@ bool sut_create(sut_task_f fn) {
     struct sut_tcb *task;
     task = (struct sut_tcb *) malloc(sizeof(struct sut_tcb));
     if (task == NULL) {
-        fprintf(stderr, "Failed to allocate memory for task.\n");
+        fprintf(stderr, "sut_create: Failed to allocate memory for task.\n");
         return false;
     }
 
-    if (getcontext(&(task->context)) == -1) {
-        fprintf(stderr, "getcontext() failed.\n");
+    if (getcontext(&(task->context)) < 0) {
+        fprintf(stderr, "sut_create: getcontext failed.\n");
         return false;
     }
     
     task->stack = (char *) malloc(sizeof(char) * THREAD_STACK_SIZE);
     if (task->stack == NULL) {
-        fprintf(stderr, "Failed to allocate memory for task->stack.\n");
+        fprintf(stderr, "sut_create: Failed to allocate memory for task->stack.\n");
         return false;
     }
 
-    task->id = task_count;
+    task->id = tasks_created;
     task->context.uc_stack.ss_sp = task->stack;
     task->context.uc_stack.ss_size = THREAD_STACK_SIZE;
     task->context.uc_stack.ss_flags = 0;
     task->context.uc_link = ucp_c_exec;
     task->function = fn;
-    task->status = 0; // 0 = expected to finish
+    task->status = 0;
 
     struct queue_entry *node = queue_new_node(task);
     pthread_mutex_lock(&mtx_q_ready); // LOCK READY QUEUE
     queue_insert_tail(&q_ready, node);
-    ++task_count;
+    ++tasks_created;
     pthread_mutex_unlock(&mtx_q_ready); // UNLOCK READY QUEUE
 	return true;
 }
@@ -136,7 +137,9 @@ void *c_exec() {
         }
         
         // Execute the task ...
-        swapcontext(ucp_c_exec, &(current_task->context));
+        if (swapcontext(ucp_c_exec, &(current_task->context)) < 0) {
+            fprintf(stderr, "c_exec: swapcontext failed.\n");
+        }
         // ... and return here
         
         // Check the task status
@@ -189,7 +192,10 @@ void *i_exec() {
         // There was a task in q_wait, so handle the I/O, then put it back in q_ready.
         waiting_task = (struct sut_tcb *)q_wait_entry->data;
         // Switch back to the context of the waiting task to do execute I/O operation (on the I-EXEC thread)
-        swapcontext(ucp_i_exec, &(waiting_task->context));
+
+        if (swapcontext(ucp_i_exec, &(waiting_task->context)) < 0) {
+            fprintf(stderr, "i_exec: swapcontext failed.\n");
+        }
         
         // Done with I/O operation, now put the task back in the ready queue
         pthread_mutex_lock(&mtx_q_ready); // LOCK READY QUEUE
@@ -202,28 +208,37 @@ void *i_exec() {
 /// @brief Allows a running task to yield execution before completing its function.
 void sut_yield() {
     current_task->status = 2;
-    swapcontext(&(current_task->context), ucp_c_exec);
+    if (swapcontext(&(current_task->context), ucp_c_exec) < 0) {
+        fprintf(stderr, "sut_yield: swapcontext failed.\n");
+    }
 }
 
 /// @brief Terminates the execution of a task. If there are multiple tasks running, calling this function will only terminate the current task.
 void sut_exit() {
     current_task->status = 1;
-    setcontext(ucp_c_exec);
+    if (setcontext(ucp_c_exec) < 0) {
+        fprintf(stderr, "sut_exit: setcontext failed.\n");
+    }
 }
 
-/// @brief Requests the system to open the file specified by `file_name`.
+/// @brief Requests the system to open the file specified by `file_name`.\n\n
+/// @brief If `file_name` exists, the file is opened for read and write operations. The file descriptor will point to the start of the file, regardless of if the file is empty or not. This means that subsequent write operations will overwrite the file. 
 /// @param file_name The name of the file to open.
-/// @return -1 if the file does not exist, otherwise the file descriptor of the opened file (non-negative) 
+/// @return -1 if the file does not exist, otherwise the file descriptor of the opened file (non-negative).
 int sut_open(char *file_name) {
     current_task->status = 3;
     // Yield control of the C-EXEC thread (returning to c_exec())
-    swapcontext(&(current_task->context), ucp_c_exec);
+    if (swapcontext(&(current_task->context), ucp_c_exec) < 0) {
+        fprintf(stderr, "sut_open: swapcontext failed.\n");
+    }
     
     // Continue in the I-EXEC thread (coming from i_exec())
     int fd = open(file_name, O_RDWR, 0644);
     
     // I/O operation done --> switch back to i_exec(), to get put back into q_ready 
-    swapcontext(&(waiting_task->context), ucp_i_exec);
+    if (swapcontext(&(waiting_task->context), ucp_i_exec) < 0) {
+        fprintf(stderr, "sut_open: swapcontext failed.\n");
+    }
     // Resume here from the C-EXEC thread (popped from q_ready)
     return fd;
 }
@@ -233,53 +248,65 @@ int sut_open(char *file_name) {
 void sut_close(int fd) {
     current_task->status = 3;
     // Yield control of the C-EXEC thread (returning to c_exec())
-    swapcontext(&(current_task->context), ucp_c_exec);
+    if (swapcontext(&(current_task->context), ucp_c_exec) < 0) {
+        fprintf(stderr, "sut_close: swapcontext() failed.\n");
+    }
 
     // Continue in the I-EXEC thread (coming from i_exec())
     close(fd);
 
     // I/O operation done --> switch back to i_exec(), to get put back into q_ready 
-    swapcontext(&(waiting_task->context), ucp_i_exec);
+    if (swapcontext(&(waiting_task->context), ucp_i_exec) < 0) {
+        fprintf(stderr, "sut_close: swapcontext failed.\n");
+    }
     // Resume here from the C-EXEC thread (popped from q_ready)
 }
 
-/// @brief Writes the bytes in `buf` to the file belonging to `fd`. Write errors are not considered in this call.
+/// @brief Writes the bytes in `buf` to the file pointed to `fd`. Write errors are not considered in this call.
 /// @param fd The file descriptor for the file to write to.
 /// @param buf The buffer of contents to write to the file.
 /// @param size The size of the buffer. 
 void sut_write(int fd, char *buf, int size) {
     current_task->status = 3;
     // Yield control of the C-EXEC thread (returning to c_exec())
-    swapcontext(&(current_task->context), ucp_c_exec);
+    if (swapcontext(&(current_task->context), ucp_c_exec) < 0) {
+        fprintf(stderr, "sut_write: swapcontext failed.\n");
+    }
 
     // Continue in the I-EXEC thread (coming from i_exec())
     write(fd, buf, size);
 
     // I/O operation done --> switch back to i_exec(), to get put back into q_ready 
-    swapcontext(&(waiting_task->context), ucp_i_exec);
+    if (swapcontext(&(waiting_task->context), ucp_i_exec) < 0) {
+        fprintf(stderr, "sut_write: swapcontext failed.\n");
+    }
     // Resume here from the C-EXEC thread (popped from q_ready)
 }
 
-/// @brief Reads up to `size` bytes into `buf`, from the file belonging to `fd`.
+/// @brief Reads up to `size` bytes into `buf`, from the file pointed to by `fd`.
 /// @param fd The file descriptor for the file to read to.
 /// @param buf The buffer of contents to write to the file.
 /// @param size The size of the buffer.
-/// @return 
+/// @return A pointer to the first char read, or NULL if the read failed or if the first char read was EOF. 
 char *sut_read(int fd, char *buf, int size) {
     current_task->status = 3;
     // Yield control of the C-EXEC thread (returning to c_exec())
-    swapcontext(&(current_task->context), ucp_c_exec);
+    if (swapcontext(&(current_task->context), ucp_c_exec) < 0) {
+        fprintf(stderr, "sut_read: swapcontext failed.\n");
+    }
 
     // Continue in the I-EXEC thread (coming from i_exec())
     size_t bytes_read = read(fd, buf, size);
 
     // I/O operation done --> switch back to i_exec(), to get put back into q_ready 
-    swapcontext(&(waiting_task->context), ucp_i_exec);
+    if (swapcontext(&(waiting_task->context), ucp_i_exec) < 0) {
+        fprintf(stderr, "sut_read: swapcontext failed.\n");
+    }
     // Resume here from the C-EXEC thread (popped from q_ready)
     return bytes_read > 0 ? buf : NULL;
 }
 
-/// @brief Completely shuts down the executors and terminates the program.
+/// @brief Completely shuts down the executors (the C-EXEC & I-EXEC kernel threads), and terminates the program.
 void sut_shutdown() {
     pthread_mutex_lock(&mtx_shutdown); // LOCK SHUTDOWN FLAG
     shutdown = 1;
@@ -287,9 +314,11 @@ void sut_shutdown() {
     
     pthread_join(*t_compute, NULL);
     pthread_join(*t_io, NULL);
+    
     free(t_compute);
     free(t_io);
     free(ucp_c_exec);
     free(ucp_i_exec);
+    
     printf("\nSUT stopped.\n");
 }
